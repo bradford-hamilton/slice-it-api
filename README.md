@@ -1,7 +1,7 @@
 <div align="center">
   <img
-    alt="TODO  todo sticky note"
-    src="TODO  ./assets/todo.jpg"
+    alt="sliced piece of pie"
+    src="./assets/slice-it.jpg"
     height="250px"
   />
 </div>
