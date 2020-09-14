@@ -14,7 +14,7 @@ import (
 // URLRepository describes the interface for interacting with our datastore. This can viewed
 // like a plug in adapter, making testing and/or switching datastores much more trivial.
 type URLRepository interface {
-	Create(content string) (int, error)
+	Create(longURL string) (string, error)
 }
 
 // URL represents a URL in in our datastore.
@@ -52,3 +52,6 @@ func NewDB() (*Db, error) {
 
 	return &Db{db}, nil
 }
+
+// Create ...
+func (db *Db) Create(longURL string) (string, error) { return "", nil }
