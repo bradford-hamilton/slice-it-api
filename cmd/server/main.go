@@ -17,12 +17,12 @@ func main() {
 	}
 	defer db.Close()
 
-	a := server.New(db)
+	s := server.New(db)
 	port := os.Getenv("SLICE_IT_API_SERVER_PORT")
 	if port == "" {
 		port = "4000"
 	}
 
 	fmt.Printf("Serving application on port %s\n", port)
-	log.Fatal(http.ListenAndServe(":"+port, a.Mux))
+	log.Fatal(http.ListenAndServe(":"+port, s.Mux))
 }

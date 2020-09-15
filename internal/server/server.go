@@ -37,4 +37,11 @@ func New(db storage.URLRepository) *API {
 
 func (a *API) initializeRoutes() {
 	a.Mux.Get("/ping", a.ping)
+	a.Mux.Route("/api", func(r chi.Router) {
+		r.Route("/v1", func(r chi.Router) {
+			r.Route("/urls", func(r chi.Router) {
+				r.Post("/", a.createShortURL)
+			})
+		})
+	})
 }

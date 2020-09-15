@@ -14,11 +14,11 @@ import (
 // URLRepository describes the interface for interacting with our datastore. This can viewed
 // like a plug in adapter, making testing and/or switching datastores much more trivial.
 type URLRepository interface {
-	Create(longURL string) (string, error)
+	Create(url SliceItURL) error
 }
 
-// URL represents a URL in in our datastore.
-type URL struct {
+// SliceItURL represents a URL in in our datastore.
+type SliceItURL struct {
 	ID        int    `json:"id,omitempty"`
 	Short     string `json:"short,omitempty"`
 	Long      string `json:"long,omitempty"`
@@ -54,4 +54,4 @@ func NewDB() (*Db, error) {
 }
 
 // Create ...
-func (db *Db) Create(longURL string) (string, error) { return "", nil }
+func (db *Db) Create(url SliceItURL) error { return nil }
