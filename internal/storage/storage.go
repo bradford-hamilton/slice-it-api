@@ -68,7 +68,6 @@ func (db *Db) Create(url SliceItURL) error {
 
 	query := "INSERT INTO urls (short, long) VALUES ($1, $2) ON CONFLICT ON CONSTRAINT unique_url_constraint DO NOTHING;"
 	if _, err = tx.Exec(query, url.Short, url.Long); err != nil {
-		fmt.Println(err)
 		return err
 	}
 	if err = tx.Commit(); err != nil {
