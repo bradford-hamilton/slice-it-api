@@ -74,3 +74,14 @@ func (a *API) redirectToLongURL(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, longURL, http.StatusMovedPermanently)
 }
+
+func (a *API) getURLStats(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "405 Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	urlHash := chi.URLParam(r, "urlHash")
+	fmt.Println(urlHash)
+	render.JSON(w, r, `{ "TODO": "stats" }`)
+}
