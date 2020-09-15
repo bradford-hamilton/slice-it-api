@@ -23,3 +23,12 @@ DROP trigger IF EXISTS urls_updated_at ON urls;
 CREATE trigger urls_updated_at
     BEFORE UPDATE ON urls FOR EACH ROW
     EXECUTE PROCEDURE trigger_set_timestamp();
+
+-- Create a unique index across the appropriate columns
+CREATE UNIQUE INDEX unique_url_idx
+    ON urls (long, short);
+
+-- Add unique constraint to the urls table so that we only have one copy of each deterministic URL
+ALTER TABLE urls
+    ADD CONSTRAINT unique_url_constraint UNIQUE
+    USING INDEX unique_url_idx;

@@ -15,6 +15,7 @@ import (
 // like a plug in adapter, making testing and/or switching datastores much more trivial.
 type URLRepository interface {
 	Create(url SliceItURL) error
+	Get(urlHash string) (string, error)
 }
 
 // SliceItURL represents a URL in in our datastore.
@@ -53,5 +54,38 @@ func NewDB() (*Db, error) {
 	return &Db{db}, nil
 }
 
-// Create ...
-func (db *Db) Create(url SliceItURL) error { return nil }
+// Create handles inserting a SliceItURL into the database. With no other requirements, we
+// don't need to return anything but an error if it happens.
+func (db *Db) Create(url SliceItURL) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	// Rollback is safe to call even if the tx is already closed,
+	// so if the tx commits successfully, this is a no-op
+	defer tx.Rollback()
+
+	query := "INSERT INTO urls (short, long) VALUES ($1, $2) ON CONFLICT ON CONSTRAINT unique_url_constraint DO NOTHING;"
+	if _, err = tx.Exec(query, url.Short, url.Long); err != nil {
+		fmt.Println(err)
+		return err
+	}
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Get takes a URL hash and finds and returns the full length original link
+func (db *Db) Get(urlHash string) (string, error) {
+	query := "SELECT long FROM urls WHERE short = $1;"
+
+	var url SliceItURL
+	row := db.QueryRow(query, urlHash)
+	if err := row.Scan(&url.Long); err != nil {
+		return "", err
+	}
+
+	return url.Long, nil
+}

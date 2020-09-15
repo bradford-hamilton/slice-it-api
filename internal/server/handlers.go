@@ -8,6 +8,7 @@ import (
 
 	"github.com/bradford-hamilton/slice-it-api/internal/storage"
 	"github.com/bradford-hamilton/slice-it-api/internal/urls"
+	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 )
 
@@ -47,7 +48,7 @@ func (a *API) createShortURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	url := storage.SliceItURL{
-		Short: urls.Shorten(req.LongURL),
+		Short: a.baseURL + "/" + urls.Shorten(req.LongURL),
 		Long:  req.LongURL,
 	}
 	if err := a.db.Create(url); err != nil {
@@ -56,4 +57,20 @@ func (a *API) createShortURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	render.JSON(w, r, fmt.Sprintf(`{ "shortURL": %s }`, url.Short))
+}
+
+func (a *API) redirectToLongURL(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "405 Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	urlHash := chi.URLParam(r, "urlHash")
+	longURL, err := a.db.Get(a.baseURL + "/" + urlHash)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, longURL, http.StatusMovedPermanently)
 }

@@ -2,6 +2,7 @@
 package server
 
 import (
+	"os"
 	"time"
 
 	"github.com/bradford-hamilton/slice-it-api/internal/storage"
@@ -14,8 +15,9 @@ import (
 // API is a structure that orchestrates our http layer, database,
 // and the communication between the them.
 type API struct {
-	db  storage.URLRepository
-	Mux *chi.Mux
+	baseURL string
+	db      storage.URLRepository
+	Mux     *chi.Mux
 }
 
 // New takes a storage.Repository and set's up an API server, using that store.
@@ -30,13 +32,23 @@ func New(db storage.URLRepository) *API {
 		middleware.Timeout(30*time.Second),             // start with a pretty standard timeout
 		tollboothChi.LimitHandler(limiterMiddleware()), // set up a basic rate limiter by ip
 	)
-	api := &API{db: db, Mux: r}
+
+	baseURL := "http://localhost:4000"
+	if os.Getenv("SLICE_IT_ENVIRONMENT") == "production" {
+		baseURL = "http://slice-it-api-load-balancer-475088201.us-west-2.elb.amazonaws.com"
+	}
+
+	api := &API{db: db, Mux: r, baseURL: baseURL}
 	api.initializeRoutes()
+
 	return api
 }
 
 func (a *API) initializeRoutes() {
 	a.Mux.Get("/ping", a.ping)
+	a.Mux.Route("/{urlHash}", func(r chi.Router) {
+		r.Get("/", a.redirectToLongURL)
+	})
 	a.Mux.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Route("/urls", func(r chi.Router) {
