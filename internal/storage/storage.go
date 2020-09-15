@@ -19,7 +19,7 @@ type URLRepository interface {
 	GetViewCount(urlHash string) (int, error)
 }
 
-// SliceItURL represents a URL in in our datastore.
+// SliceItURL represents a URL in in our system.
 type SliceItURL struct {
 	ID        int    `json:"id,omitempty"`
 	Short     string `json:"short,omitempty"`
@@ -68,6 +68,7 @@ func (db *Db) Create(url SliceItURL) error {
 	// so if the tx commits successfully, this is a no-op
 	defer tx.Rollback()
 
+	// No need to persist any more than one of each URL. The hash function is deterministic
 	query := "INSERT INTO urls (short, long) VALUES ($1, $2) ON CONFLICT ON CONSTRAINT unique_url_constraint DO NOTHING;"
 	if _, err = tx.Exec(query, url.Short, url.Long); err != nil {
 		return err
