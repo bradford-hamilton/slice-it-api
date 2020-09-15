@@ -10,7 +10,7 @@ import (
 	"github.com/bradford-hamilton/slice-it-api/internal/storage"
 )
 
-// mockRepo implements the TodoRepository interface, and is used for testing.
+// mockRepo implements the URLRepository interface, and is used for testing.
 type mockRepo struct{}
 
 func (m *mockRepo) Create(url storage.SliceItURL) error      { return nil }

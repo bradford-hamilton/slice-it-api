@@ -33,3 +33,7 @@ CREATE UNIQUE INDEX unique_url_idx
 ALTER TABLE urls
     ADD CONSTRAINT unique_url_constraint UNIQUE
     USING INDEX unique_url_idx;
+
+-- Create index on short column, as it is used for search constantly
+CREATE index IF NOT EXISTS idx_urls_short
+    ON urls(short);

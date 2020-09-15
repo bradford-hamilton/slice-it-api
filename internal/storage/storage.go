@@ -72,7 +72,7 @@ func (db *Db) Create(url SliceItURL) error {
 	if _, err = tx.Exec(query, url.Short, url.Long); err != nil {
 		return err
 	}
-	if err = tx.Commit(); err != nil {
+	if err := tx.Commit(); err != nil {
 		return err
 	}
 	return nil
@@ -121,7 +121,7 @@ func (db *Db) incrementViewCount(urlHash string) error {
 	if _, err = tx.Exec(query, urlHash); err != nil {
 		return err
 	}
-	if err = tx.Commit(); err != nil {
+	if err := tx.Commit(); err != nil {
 		return err
 	}
 	return nil
