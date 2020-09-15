@@ -13,8 +13,9 @@ import (
 // mockRepo implements the TodoRepository interface, and is used for testing.
 type mockRepo struct{}
 
-func (m *mockRepo) Create(url storage.SliceItURL) error { return nil }
-func (m *mockRepo) Get(urlHash string) (string, error)  { return "", nil }
+func (m *mockRepo) Create(url storage.SliceItURL) error      { return nil }
+func (m *mockRepo) Get(urlHash string) (string, error)       { return "", nil }
+func (m *mockRepo) GetViewCount(urlHash string) (int, error) { return 0, nil }
 
 func TestAPI_ping(t *testing.T) {
 	api := New(&mockRepo{})

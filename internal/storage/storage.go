@@ -16,6 +16,7 @@ import (
 type URLRepository interface {
 	Create(url SliceItURL) error
 	Get(urlHash string) (string, error)
+	GetViewCount(urlHash string) (int, error)
 }
 
 // SliceItURL represents a URL in in our datastore.
@@ -23,6 +24,7 @@ type SliceItURL struct {
 	ID        int    `json:"id,omitempty"`
 	Short     string `json:"short,omitempty"`
 	Long      string `json:"long,omitempty"`
+	ViewCount int    `json:"view_count,omitempty"`
 	CreatedAt string `json:"created_at,omitempty"`
 	UpdatedAt string `json:"updated_at,omitempty"`
 }
@@ -86,5 +88,41 @@ func (db *Db) Get(urlHash string) (string, error) {
 		return "", err
 	}
 
+	// Thought here: would we actually want this decoupled and have the caller use it after fetching a URL?
+	// We may not want every "Get" call here to do this. This is okay for now, explain thoughts to Jim.
+	if err := db.incrementViewCount(urlHash); err != nil {
+		return "", err
+	}
+
 	return url.Long, nil
+}
+
+// GetViewCount takes a short URL hash and finds and returns the view count stats from that URL
+func (db *Db) GetViewCount(urlHash string) (int, error) {
+	query := "SELECT view_count FROM urls WHERE short = $1;"
+
+	var url SliceItURL
+	row := db.QueryRow(query, urlHash)
+	if err := row.Scan(&url.ViewCount); err != nil {
+		return 0, err
+	}
+
+	return url.ViewCount, nil
+}
+
+func (db *Db) incrementViewCount(urlHash string) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	query := "UPDATE urls SET view_count = view_count + 1 WHERE short = $1;"
+	if _, err = tx.Exec(query, urlHash); err != nil {
+		return err
+	}
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+	return nil
 }

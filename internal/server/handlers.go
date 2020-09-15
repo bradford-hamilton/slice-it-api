@@ -1,7 +1,9 @@
 package server
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -11,6 +13,9 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 )
+
+// ErrInvalidShortURL is returned from redirectToLongURL if the short URL in question cannot be found
+var ErrInvalidShortURL = errors.New("please ensure you have a correct short URL, cannot be found")
 
 func (a *API) ping(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
@@ -64,10 +69,14 @@ func (a *API) redirectToLongURL(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "405 Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
-
 	urlHash := chi.URLParam(r, "urlHash")
+
 	longURL, err := a.db.Get(a.baseURL + "/" + urlHash)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.Error(w, ErrInvalidShortURL.Error(), http.StatusBadRequest)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -80,8 +89,17 @@ func (a *API) getURLStats(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "405 Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
-
 	urlHash := chi.URLParam(r, "urlHash")
-	fmt.Println(urlHash)
-	render.JSON(w, r, `{ "TODO": "stats" }`)
+
+	viewCount, err := a.db.GetViewCount(a.baseURL + "/" + urlHash)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.Error(w, ErrInvalidShortURL.Error(), http.StatusBadRequest)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	render.JSON(w, r, fmt.Sprintf(`{ "viewCount": %d }`, viewCount))
 }
