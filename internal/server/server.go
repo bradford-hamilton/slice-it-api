@@ -20,7 +20,7 @@ type API struct {
 	Mux     *chi.Mux
 }
 
-// New takes a storage.Repository and set's up an API server, using that store.
+// New takes a storage.Repository and set's up an API server, using the store.
 func New(db storage.URLRepository) *API {
 	r := chi.NewRouter()
 	r.Use(
