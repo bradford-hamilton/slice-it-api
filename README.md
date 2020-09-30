@@ -75,7 +75,7 @@ Push image:
 docker push bradfordhamilton/slice-it-api:latest
 ```
 
-Then over in the infra repo, plan and apply.
+Then cd into `build/terraform` and run the following commands.
 ```
 terraform plan -out=tfplan -input=false .
 ```
