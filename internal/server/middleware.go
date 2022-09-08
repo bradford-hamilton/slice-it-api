@@ -14,7 +14,7 @@ func limiterMiddleware() *limiter.Limiter {
 		DefaultExpirationTTL: time.Minute * 30,
 	})
 	lmt.SetOnLimitReached(func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, http.StatusText(429), http.StatusTooManyRequests)
+		http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 		return
 	})
 	return lmt
